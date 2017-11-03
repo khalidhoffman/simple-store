@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "outDir": "./",
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "sourceRoot": ".",
+    "sourceMap": true,
+    "target": "es5",
+    "lib": [
+      "dom",
+      "es2015",
+      "es2017"
+    ],
+    "baseUrl": ".",
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "include": [
+    "**/*"
+  ],
+  "exclude": []
+}

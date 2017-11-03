@@ -1,0 +1,75 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "arrow-parens": [
+      "error",
+      "as-needed"
+    ],
+    "typedef": [
+      true,
+      "property-declaration",
+      "call-signature",
+      "arrow-call-signature"
+    ],
+    "quotemark": [
+      true,
+      "single"
+    ],
+    "ordered-imports": false,
+    "semicolon": [
+      true,
+      "always",
+      "ignore-interfaces"
+    ],
+    "space-before-function-paren": false,
+    "indent": [
+      true,
+      "tabs",
+      4
+    ],
+    "interface-name": [
+      true,
+      "never-prefix"
+    ],
+    "trailing-comma": false,
+    "no-console": [
+      true,
+      "log"
+    ],
+    "object-literal-sort-keys": false,
+    "object-literal-shorthand": false,
+    "jsdoc-format": false,
+    "no-var-requires": false,
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore",
+      "allow-pascal-case"
+    ],
+    "eofline": false,
+    "max-classes-per-file": false,
+    "member-ordering": [
+      true,
+      {
+        "order": [
+          "public-static-field",
+          "public-instance-field",
+          "protected-static-field",
+          "protected-instance-field",
+          "private-static-field",
+          "private-instance-field",
+          "private-constructor",
+          "protected-constructor",
+          "public-constructor",
+          "private-instance-method",
+          "protected-instance-method",
+          "public-instance-method",
+          "private-static-method",
+          "protected-static-method",
+          "public-static-method"
+        ]
+      }
+    ]
+  }
+}

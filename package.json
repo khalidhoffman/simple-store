@@ -1,0 +1,36 @@
+{
+  "name": "simple-store",
+  "version": "0.0.1",
+  "description": "simple store",
+  "main": "store.js",
+  "scripts": {
+    "test": "mocha",
+    "tsc:watch": "tsc --watch",
+    "postinstall": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khalidhoffman/simple-store.git"
+  },
+  "keywords": [
+    "store"
+  ],
+  "author": "Khalid Hoffman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/khalidhoffman/simple-store/issues"
+  },
+  "homepage": "https://github.com/khalidhoffman/simple-store#readme",
+  "devDependencies": {
+    "@types/lodash": "^4.14.80",
+    "@types/rx": "^4.1.1",
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "rxjs": "^5.5.4"
+  }
+}

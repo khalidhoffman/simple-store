@@ -1,5 +1,19 @@
 # SimpleStore
 
+## API
+
+method                              | description
+------------------------------------|----------------------------------
+`getObservable(path: string)`       | returns an observable that emits the entire state when the path has been modified
+`getStateObservable(path: string)`  | returns an observable that emits the modified state slice when the path has been modified
+`on(path: string, callback)`        | similar to jQuery - executes callback by passing changed value at path when modified. Returns a `Subscription`
+`off(path: string, callback)`       | similar to jQuery - unsubscribes callback from path
+`watch(path: string, callback)`     | executes callback by passing entire state when path has been modified. Returns a `Subscription`
+`subscribe(path: string, callback)` | executes callback by passing entire state when the state has been touched. Returns a `Subscription`
+`update(state: any)`                | similar to React's `updateState` - merges argument with current state
+`getState(state: any)`              | returns current state as-is
+`get(state: any)`                   | returns current value in state at path
+
 ## How to use?
 Some example usage... (more can be found in the [test/store.spec.js](./test/store.spec.js))
 ```javascript

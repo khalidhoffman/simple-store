@@ -1,4 +1,4 @@
-import {get, last} from 'lodash';
+import {get, last, find} from 'lodash';
 import {BehaviorSubject} from 'rxjs/BehaviorSubject';
 import {Observable} from 'rxjs/Observable';
 import {Subscription} from 'rxjs/Subscription';
@@ -13,21 +13,20 @@ export interface StoreState {
 }
 
 export interface StoreSubscription extends Subscription {
+	callback: (value: any) => any
+}
+
+export interface PathStoreSubscription extends StoreSubscription {
 	path: string
 }
 
-export interface StorePathSubscription {
-	callbacks: Array<() => any>
-	subscriptions: StoreSubscription[]
-}
-
-export interface StorePathSubscriptionCache {
-	[path: string]: StorePathSubscription
+export interface StoreSubscriptionIndex {
+	[path: string]: StoreSubscription[]
 }
 
 export default class Store {
 	private _state: any = {};
-	private indexes: StorePathSubscriptionCache = {};
+	private pathIndex: StoreSubscriptionIndex = {};
 	private observable: BehaviorSubject<any>;
 
 	set state(value: any) {
@@ -46,13 +45,11 @@ export default class Store {
 		this.observable = new BehaviorSubject(this._state);
 	}
 
-	private removePathIndex(path: string, index: number): { callbacks: number, subscriptions: number } {
-		const removedSubscriptions: Subscription[] = this.indexes[path].subscriptions.splice(index, 1);
-		const removedCallbacks: Array<() => any> = this.indexes[path].callbacks.splice(index, 1);
-		return {callbacks: removedCallbacks.length, subscriptions: removedSubscriptions.length};
+	private removePathIndex(path: string, index: number): { removed: number } {
+		return {removed: this.pathIndex[path].splice(index, 1).length};
 	}
 
-	private injectState(fn: () => any): () => any {
+	private injectState(fn: (value: any) => any): () => any {
 		const state = this.state;
 		const _state = this._state;
 		return function (): any {
@@ -60,11 +57,11 @@ export default class Store {
 		};
 	}
 
-	private wrapUnsubscribe(subscription: StoreSubscription): StoreSubscription {
+	private wrapUnsubscribe(subscription: PathStoreSubscription): PathStoreSubscription {
 		let subscriptionIdx: number;
 
-		if (this.indexes[subscription.path]) {
-			subscriptionIdx = this.indexes[subscription.path].subscriptions.indexOf(subscription);
+		if (this.pathIndex[subscription.path]) {
+			subscriptionIdx = this.pathIndex[subscription.path].indexOf(subscription);
 		} else {
 			subscriptionIdx = 0;
 		}
@@ -96,35 +93,33 @@ export default class Store {
 		return get(this._state, path, fallback);
 	}
 
-	public subscribe(callback: () => any): Subscription {
-		return this.observable.subscribe({next: this.injectState(callback)});
+	public subscribe(callback: () => any): StoreSubscription {
+		return Object.assign(this.observable.subscribe({next: this.injectState(callback)}), {callback});
 	}
 
 	/**
 	 * @description Passes the changed value on _state changes
 	 */
-	public on(path: string, callback: () => any): StoreSubscription {
+	public on(path: string, callback: (value: any) => any): StoreSubscription {
 		const _subscription = this.getObservable(path).subscribe({next: this.injectState(callback)});
-		const subscription: StoreSubscription = this.wrapUnsubscribe(Object.assign(_subscription, {path}));
+		const subscription: StoreSubscription = this.wrapUnsubscribe(Object.assign(_subscription, {path, callback}));
 
-		this.indexes[path] = this.indexes[path] || {callbacks: [], subscriptions: []};
-		this.indexes[path].callbacks.push(callback);
-		this.indexes[path].subscriptions.push(subscription);
+		this.pathIndex[path] = this.pathIndex[path] || [];
+		this.pathIndex[path].push(subscription);
 
-		return last(this.indexes[path].subscriptions);
+		return last(this.pathIndex[path]);
 	}
 
-	public off(path: string, callback: () => any): Subscription[] {
-		const callbackIdx = this.indexes[path].callbacks.indexOf(callback);
-		let removedSubscriptions;
+	public off(path: string, callback: (value: any) => any): Subscription[] {
+		const subscription = find(this.pathIndex[path], {callback});
+		const subscriptionIdx = this.pathIndex[path].indexOf(subscription);
+		const removedSubscriptions = subscriptionIdx < 0 ?  [] : this.pathIndex[path].splice(subscriptionIdx, 1);
 
-		if (callbackIdx < 0) {
+		if (removedSubscriptions.length === 0) {
 			console.warn('could not find subscription');
-			return [];
+			return removedSubscriptions;
 		}
 
-		this.indexes[path].callbacks.splice(callbackIdx, 1);
-		removedSubscriptions = this.indexes[path].subscriptions.splice(callbackIdx, 1);
 		removedSubscriptions.forEach(observable => observable.unsubscribe());
 		return removedSubscriptions;
 	}
@@ -132,13 +127,16 @@ export default class Store {
 	/**
 	 * @description Passes the entire _state on _state changes
 	 */
-	public watch(path: string, callback: (value: StoreState) => void): StoreSubscription {
-		return Object.assign(this.getStateObservable(path).subscribe({next: callback}), {path});
+	public watch(path: string, callback: (value: StoreState) => any): StoreSubscription {
+		const subscription = this.getStateObservable(path).subscribe({next: this.injectState(callback)});
+		return Object.assign(subscription, {path, callback});
 	}
 
 	public getStateObservable(path: string): Observable<StoreState> {
 		if (path) {
-			return this.observable.distinctUntilChanged((prev, current) => Store.compare(prev, current, path));
+			return this.observable.distinctUntilChanged((prev: StoreState, current: StoreState) => {
+				return Store.compare(prev, current, path);
+			});
 		} else {
 			return this.observable;
 		}

@@ -19,10 +19,7 @@
       "es2015",
       "es2017"
     ],
-    "baseUrl": ".",
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
+    "baseUrl": "."
   },
   "include": [
     "**/*"
